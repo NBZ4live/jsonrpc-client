@@ -1,12 +1,12 @@
 <?php
 
-namespace Tochka\JsonRpcClient;
+namespace Nbz4live\JsonRpc\Client;
 
 use Illuminate\Support\Facades\Log;
 
 /**
  * Class Client
- * @package Tochka\JsonRpcClient
+ * @package Nbz4live\JsonRpc\Client
  *
  * @method static static get(string $serviceName)
  * @method static static batch()

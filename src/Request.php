@@ -1,10 +1,10 @@
 <?php
 
-namespace Tochka\JsonRpcClient;
+namespace Nbz4live\JsonRpc\Client;
 
 /**
  * Class Request
- * @package Tochka\JsonRpcClient
+ * @package Nbz4live\JsonRpc\Client
  */
 class Request
 {

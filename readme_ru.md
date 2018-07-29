@@ -11,12 +11,12 @@ JsonRpc клиент - реализация клиента для JsonRpc-сер
 ```php
 'providers' => [
     //...
-    Tochka\JsonRpcClient\ServiceProvider::class,
+    Nbz4live\JsonRpc\Client\ServiceProvider::class,
 ],
 ```
 3. Опубликуйте конфигурацию:  
 ```
-php artisan vendor:publish --provider="Tochka\JsonRpcClient\ServiceProvider"
+php artisan vendor:publish --provider="Nbz4live\JsonRpc\Client\ServiceProvider"
 ```
 
 ### Lumen
@@ -31,9 +31,9 @@ $app->configure('jsonrpc');
 $app->withFacades();
 ```
 5. Если планируете использовать автоматическую генерацию прокси-клиента - зарегистрируйте сервис-провайдер 
-`Tochka\JsonRpcClient\ServiceProvider` в `bootstrap/app.php`:
+`Nbz4live\JsonRpc\Client\ServiceProvider` в `bootstrap/app.php`:
 ```php
-$app->register(Tochka\JsonRpcClient\ServiceProvider::class);
+$app->register(Nbz4live\JsonRpc\Client\ServiceProvider::class);
 ```
 ## Использование
 ### Настройка
@@ -54,7 +54,7 @@ $app->register(Tochka\JsonRpcClient\ServiceProvider::class);
 ### Вызовы без прокси-класса
 Вызов метода JsonRpc:
 ```php
-use Tochka\JsonRpcClient\Client;
+use Nbz4live\JsonRpc\Client\Client;
 //....
 $result = Client::fooBar('Some text');
 ```
@@ -77,7 +77,7 @@ $resultBar = $api->bar(123);
 $resultSome = $api->call('someMethod', ['param1' => 1, 'param2' => true]);
 $api->execute();
 ```
-В указанном примере в переменных $resultFoo, $resultBar и $resultSome будет пустой класс `Tochka\JsonRpcClient\Response`, 
+В указанном примере в переменных $resultFoo, $resultBar и $resultSome будет пустой класс `Nbz4live\JsonRpc\Client\Response`, 
 пока не будет вызван метод `execute`. После этого будет осуществлен один запрос на JsonRpc-сервер, переменные 
 заполнятся вернувшимися результатами с сервера.
 

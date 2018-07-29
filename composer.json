@@ -4,6 +4,10 @@
     "license": "MIT",
     "authors": [
         {
+            "name": "Sergey Fayngold",
+            "email": "sergey@faynhost.com"
+        },
+        {
             "name": "Pavel Babushkin",
             "email": "darkdarin@tochka.com"
         }
@@ -19,5 +23,12 @@
         "files": [
             "src/helpers.php"
         ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nbz4live\\JsonRpc\\Client\\ServiceProvider"
+            ]
+        }
     }
 }

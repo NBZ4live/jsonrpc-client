@@ -1,6 +1,6 @@
 <?php
 
-namespace Tochka\JsonRpcClient;
+namespace Nbz4live\JsonRpc\Client;
 
 use Illuminate\Console\Command;
 
@@ -175,8 +175,8 @@ class ClientGenerator extends Command
 
 namespace {$classInfo['namespace']};
 
-use Tochka\JsonRpcClient\Client;
-use Tochka\JsonRpcClient\Response;
+use Nbz4live\JsonRpc\Client\Client;
+use Nbz4live\JsonRpc\Client\Response;
 
 /**
  * {$classDescription}

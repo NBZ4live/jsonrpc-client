@@ -1,6 +1,6 @@
 <?php
 
-namespace Tochka\JsonRpcClient;
+namespace Nbz4live\JsonRpc\Client;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
