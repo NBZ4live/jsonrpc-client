@@ -1,0 +1,23 @@
+{
+    "name": "nbz4live/laravel-jsonrpc-client",
+    "description": "JsonRpc Client for Laravel",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pavel Babushkin",
+            "email": "darkdarin@tochka.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "illuminate/log": "~5.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nbz4live\\JsonRpc\\Client\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    }
+}
