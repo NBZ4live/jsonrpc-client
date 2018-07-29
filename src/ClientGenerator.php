@@ -180,14 +180,16 @@ use Nbz4live\JsonRpc\Client\Response;
 
 /**
  * {$classDescription}
+ * 
  * @author JsonRpcClientGenerator
  * @date {$date}
 {$methodsDoc}
  */
-class {$classInfo['name']} extends Client 
+class {$classInfo['name']} extends Client
 {
     protected \$serviceName = '{$serviceName}';{$methods}
 }
+
 php;
         file_put_contents($classInfo['filePath'], $classSource);
 
@@ -288,15 +290,15 @@ php;
             }
             $parameters = implode(', ', $parameters);
 
-            $result[] = "@method static Response {$methodName}({$parameters})";
+            $result[] = " @method static Response {$methodName}({$parameters})";
             $result[] = '';
         }
 
         if (empty($result)) {
-            $result = ' *';
+            $result = ' * ';
         }
 
-        return implode("\n * ", $result);
+        return implode("\n *", $result);
     }
 
     /**
@@ -338,26 +340,29 @@ php;
             $parameters = implode(', ', $parameters);
 
             if (\count($array) > 1) {
-                $arrayStr = implode(",\n\t\t\t", $array);
-                $array = "\n\t\t\t{$arrayStr}\n\t\t";
+                $arrayStr = implode(",\n            ", $array);
+                $array = "\n            {$arrayStr},\n        ";
             } elseif (\count($array)) {
                 $array = $array[0];
             } else {
                 $array = '';
             }
 
+            if (!empty($result)) {
+                $result[] = '';
+            }
+
             $result[] = "protected function _{$methodName}({$parameters})";
             $result[] = '{';
-            $result[] = "   return \$this->_call('{$methodName}', [{$array}]);";
+            $result[] = "    return \$this->_call('{$methodName}', [{$array}]);";
             $result[] = '}';
-            $result[] = '';
         }
 
         if (count($result)) {
             $prefix = "\n\n    ";
         }
 
-        return $prefix . implode("\n    ", $result);
+        return \preg_replace('/^([[:blank:]]{4})$/m', '', $prefix . implode("\n    ", $result));
     }
 
     /**
