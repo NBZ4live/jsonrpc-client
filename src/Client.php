@@ -54,6 +54,8 @@ class Client
     /** @var Response[] */
     protected $results = [];
 
+    protected $headers = [];
+
     private $time = 0;
 
     public function __construct()
@@ -112,6 +114,37 @@ class Client
     }
 
     /**
+     * Sets one request header.
+     *
+     * @param string $name
+     * @param $value
+     *
+     * @return $this
+     */
+    protected function _setHeader(string $name, $value)
+    {
+        $this->headers[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets multiple request headers.
+     *
+     * @param array $headers
+     *
+     * @return $this
+     */
+    protected function _setHeaders(array $headers)
+    {
+        foreach ($headers as $name => $value) {
+            $this->_setHeader($name, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * Выполняет удаленный вызов (либо добавляет его в массив)
      * @param string $method
      * @param array $params
@@ -150,10 +183,10 @@ class Client
         // настройки подключения
         $settings = $this->getConnectionOptions($serviceName);
 
-        $headers = ['Content-type: application/json'];
+        $this->_setHeader('Content-type', 'application/json');
 
         if ($settings['authHeader'] !== null && $settings['key'] !== null) {
-            $headers[] = $settings['authHeader'] . ': ' . $settings['key'];
+            $this->_setHeader($settings['authHeader'], $settings['key']);
         }
 
         // если не заданы настройки хоста
@@ -186,7 +219,7 @@ class Client
         $curl = curl_init($settings['host']);
         curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getRequestHeaders());
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $json_request);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
@@ -300,6 +333,17 @@ class Client
             'key' => config('jsonrpcclient.connections.' . $serviceName . '.key', null),
             'authHeader' => config('jsonrpcclient.connections.' . $serviceName . '.authHeaderName', null),
         ];
+    }
+
+    protected function getRequestHeaders()
+    {
+        $headers = [];
+
+        foreach ($this->headers as $name => $value) {
+            $headers[] = "{$name}: {$value}";
+        }
+
+        return $headers;
     }
 
     /**
