@@ -7,6 +7,13 @@ return [
     // Соединение по умолчанию
     'default' => 'api',
 
+    /*
+     * Add additional headers to all requests.
+     * Key: header name
+     * Value: header value or callable
+     */
+    'additinalHeaders' => [],
+
     // Список соединений
     'connections' => [
         // Наименование соединения
@@ -17,6 +24,10 @@ return [
             'key' => 'ToKeN12345',
             // Заголовок авторизации. Если не используется - можно не указывать
             'authHeaderName' => 'X-Access-Key',
+            /*
+             * Add additional headers to requests of this connection.
+             */
+            'additinalHeaders' => [],
             // Имя прокси-класса для данного соединения
             'clientClass' => '\\App\\Api\\Client'
         ]

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
  * @method static static get(string $serviceName)
  * @method static static batch()
  * @method static static cache($minutes = -1)
+ * @method static static setHeader(string $name, mixed|callable $value)
  * @method static execute()
  * @method static Response call(string $method, array $params)
  */
@@ -117,7 +118,7 @@ class Client
      * Sets one request header.
      *
      * @param string $name
-     * @param $value
+     * @param mixed|callable $value
      *
      * @return $this
      */
@@ -138,6 +139,10 @@ class Client
     protected function _setHeaders(array $headers)
     {
         foreach ($headers as $name => $value) {
+            if (!$value) {
+                continue;
+            }
+
             $this->_setHeader($name, $value);
         }
 
@@ -189,6 +194,8 @@ class Client
             $this->_setHeader($settings['authHeader'], $settings['key']);
         }
 
+        $this->_setHeaders($settings['additinalHeaders']);
+
         // если не заданы настройки хоста
         if (null === $settings['host']) {
             Log::error('No connection settings for the service "' . $serviceName . '');
@@ -219,7 +226,7 @@ class Client
         $curl = curl_init($settings['host']);
         curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getRequestHeaders());
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getRequestHeaders($requests));
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $json_request);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
@@ -332,14 +339,26 @@ class Client
             'host' => config('jsonrpcclient.connections.' . $serviceName . '.url'),
             'key' => config('jsonrpcclient.connections.' . $serviceName . '.key', null),
             'authHeader' => config('jsonrpcclient.connections.' . $serviceName . '.authHeaderName', null),
+            'additinalHeaders' => \array_merge(
+                config('jsonrpcclient.additinalHeaders', []),
+                config('jsonrpcclient.connections.' . $serviceName . '.additinalHeaders', [])
+            ),
         ];
     }
 
-    protected function getRequestHeaders()
+    protected function getRequestHeaders(array $requests)
     {
         $headers = [];
 
         foreach ($this->headers as $name => $value) {
+            if (!$value) {
+                continue;
+            }
+
+            if (\is_callable($value)) {
+                $value = \call_user_func($value, $requests);
+            }
+
             $headers[] = "{$name}: {$value}";
         }
 
