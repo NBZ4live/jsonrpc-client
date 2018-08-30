@@ -139,7 +139,9 @@ class Client
     protected function _setHeaders(array $headers)
     {
         foreach ($headers as $name => $value) {
-            $this->_setHeader($name, $value);
+            if (!isset($this->headers[$name])) {
+                $this->_setHeader($name, $value);
+            }
         }
 
         return $this;
