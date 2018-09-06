@@ -12,7 +12,7 @@ return [
      * Key: header name
      * Value: header value or callable
      */
-    'additinalHeaders' => [],
+    'additionalHeaders' => [],
 
     // Список соединений
     'connections' => [
@@ -27,7 +27,7 @@ return [
             /*
              * Add additional headers to requests of this connection.
              */
-            'additinalHeaders' => [],
+            'additionalHeaders' => [],
             // Имя прокси-класса для данного соединения
             'clientClass' => '\\App\\Api\\Client'
         ]

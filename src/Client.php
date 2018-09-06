@@ -192,7 +192,7 @@ class Client
             $this->_setHeader($settings['authHeader'], $settings['key']);
         }
 
-        $this->_setHeaders($settings['additinalHeaders']);
+        $this->_setHeaders($settings['additionalHeaders']);
 
         // если не заданы настройки хоста
         if (null === $settings['host']) {
@@ -337,9 +337,9 @@ class Client
             'host' => config('jsonrpcclient.connections.' . $serviceName . '.url'),
             'key' => config('jsonrpcclient.connections.' . $serviceName . '.key', null),
             'authHeader' => config('jsonrpcclient.connections.' . $serviceName . '.authHeaderName', null),
-            'additinalHeaders' => \array_merge(
-                config('jsonrpcclient.additinalHeaders', []),
-                config('jsonrpcclient.connections.' . $serviceName . '.additinalHeaders', [])
+            'additionalHeaders' => \array_merge(
+                config('jsonrpcclient.additionalHeaders', []),
+                config('jsonrpcclient.connections.' . $serviceName . '.additionalHeaders', [])
             ),
         ];
     }
