@@ -73,7 +73,8 @@ class ClientGenerator extends Command
         $headers = ['Content-type: application/json'];
 
         foreach (config('jsonrpcclient.additionalHeaders') as $key => $value) {
-            $headers[] = "{$key}: " . (\is_callable($value) ? $value() : $value);
+            $value = \is_callable($value) ? $value() : $value;
+            $headers[] = "{$key}: $value";
         }
 
         $curl = curl_init($host);
