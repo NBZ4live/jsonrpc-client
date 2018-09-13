@@ -70,11 +70,16 @@ class ClientGenerator extends Command
     protected function getSmdScheme($host)
     {
         $this->info('Loading SMD from host ' . $host);
+        $headers = ['Content-type: application/json'];
+
+        foreach (config('jsonrpcclient.additionalHeaders') as $key => $value) {
+            $headers[] = "{$key}: " . (\is_callable($value) ? $value() : $value);
+        }
 
         $curl = curl_init($host);
         curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
