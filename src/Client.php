@@ -236,7 +236,7 @@ class Client
 
         // ошибка декодирования Json
         if (null === $response) {
-            Log::error('Error parsing response from Api. An error has occurred on the server. ' . $this->getLogInfo($json_request, $json_response));
+            $this->logError('Error parsing response from Api. An error has occurred on the server. ' . $this->getLogInfo($json_request, $json_response));
             $this->result(null, false);
             return;
         }
@@ -246,12 +246,12 @@ class Client
             // если вернулся массив результатов
             foreach ($response as $result) {
                 if (!$this->parseResult($result)) {
-                    Log::error('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($json_request, $json_response));
+                    $this->logError('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($json_request, $json_response));
                 }
             }
         } else {
             if (!$this->parseResult($response)) {
-                Log::error('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($json_request, $json_response));
+                $this->logError('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($json_request, $json_response));
             }
         }
         $this->requests = [];
@@ -372,5 +372,10 @@ class Client
     protected function createRequest($method, $params)
     {
         return new Request($this->getServiceName(), $method, $params, config('jsonrpcclient.clientName'), $this->cache);
+    }
+
+    protected function logError(string $error): void
+    {
+        Log::error($error);
     }
 }
