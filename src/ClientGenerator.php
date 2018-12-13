@@ -74,6 +74,11 @@ class ClientGenerator extends Command
 
         foreach (config('jsonrpcclient.additionalHeaders') as $key => $value) {
             $value = \is_callable($value) ? $value() : $value;
+
+            if (null === $value) {
+                continue;
+            }
+
             $headers[] = "{$key}: $value";
         }
 
