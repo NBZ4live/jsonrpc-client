@@ -187,15 +187,7 @@ class ClientGenerator extends Command
 namespace {$classInfo['namespace']};
 
 use Nbz4live\JsonRpc\Client\Client;
-use Nbz4live\JsonRpc\Client\Response;
 
-/**
- * {$classDescription}
- * 
- * @author JsonRpcClientGenerator
- * @date {$date}
-{$methodsDoc}
- */
 class {$classInfo['name']} extends Client
 {
     protected \$serviceName = '{$serviceName}';{$methods}
@@ -363,7 +355,7 @@ php;
                 $result[] = '';
             }
 
-            $result[] = "protected function _{$methodName}({$parameters})";
+            $result[] = "public function {$methodName}({$parameters})";
             $result[] = '{';
             $result[] = "    return \$this->_call('{$methodName}', [{$array}]);";
             $result[] = '}';
