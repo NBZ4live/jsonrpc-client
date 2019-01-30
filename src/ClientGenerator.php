@@ -170,11 +170,6 @@ class ClientGenerator extends Command
             return false;
         }
 
-        $date = date('d.m.Y H:i');
-        $classDescription = !empty($smd->description) ? $smd->description : 'Created by ClientGenerator';
-
-        $methodsDoc = $this->getMethodDocs($smd);
-
         if (!empty($smd->namedParameters)) {
             $methods = $this->getMethods($smd);
         } else {
@@ -188,6 +183,9 @@ namespace {$classInfo['namespace']};
 
 use Nbz4live\JsonRpc\Client\Client;
 
+/**
+ * @SuppressWarnings(PHPMD)
+ */
 class {$classInfo['name']} extends Client
 {
     protected \$serviceName = '{$serviceName}';{$methods}
@@ -238,70 +236,6 @@ php;
         $result['filePath'] = $this->getNamespaceDirectory($result['namespace']) . DIRECTORY_SEPARATOR . $result['name'] . '.php';
 
         return $result;
-    }
-
-    /**
-     * Возвращает информацию о методах
-     *
-     * @param \stdClass $smd
-     *
-     * @return string
-     */
-    protected function getMethodDocs($smd)
-    {
-        $result = [];
-        $oldGroup = null;
-
-        // перебираем доступные методы
-        foreach ($smd->services as $methodName => $methodInfo) {
-            // если началась новая группа
-            if (isset($methodInfo->group)) {
-                if ($oldGroup !== $methodInfo->group) {
-                    $result[] = '';
-                    if (!empty($methodInfo->groupName)) {
-                        $ln = mb_strlen($methodInfo->groupName);
-                        $delimiter = str_pad('', $ln + 20, '=');
-                        $result[] = $delimiter;
-                        $result[] = str_pad('', 10) . $methodInfo->groupName;
-                        $result[] = $delimiter;
-                    }
-                }
-                $oldGroup = $methodInfo->group;
-            }
-
-            // описание для метода
-            if (!empty($methodInfo->description)) {
-                $result[] = preg_replace("#\n#iu", "\n *   ", $methodInfo->description);
-            }
-
-            // параметры метода
-            $parameters = [];
-            if (!empty($methodInfo->parameters)) {
-                $i = 0;
-                foreach ($methodInfo->parameters as $param) {
-                    $paramStr = !empty($param->name) ? '$' . $param->name : '$param' . ++$i;
-                    if (!empty($param->type)) {
-                        $paramStr = $param->type . ' ' . $paramStr;
-                    }
-                    if (isset($param->default)) {
-                        $paramStr .= ' = ' . str_replace("\n", '', var_export($param->default, true));
-                    } elseif (!empty($param->optional)) {
-                        $paramStr .= ' = null';
-                    }
-                    $parameters[] = $paramStr;
-                }
-            }
-            $parameters = implode(', ', $parameters);
-
-            $result[] = " @method static Response {$methodName}({$parameters})";
-            $result[] = '';
-        }
-
-        if (empty($result)) {
-            $result = ' * ';
-        }
-
-        return implode("\n *", $result);
     }
 
     /**
@@ -408,5 +342,4 @@ php;
 
         return (array)$composerConfig->autoload->{'psr-4'};
     }
-
 }
