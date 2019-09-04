@@ -231,6 +231,14 @@ class Client
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
 
         $json_response = curl_exec($curl);
+
+        if (curl_errno($curl)) {
+            $this->logError('Error while performing curl request. Curl error number: [' . curl_errno($curl) . ']. Curl error message by number: [' . curl_strerror(curl_errno($curl)) . ']. Curl error message: [' . curl_error($curl) . ']');
+            $this->result(null, false);
+            curl_close($curl);
+            return;
+        }
+
         curl_close($curl);
         $response = json_decode($json_response);
 
