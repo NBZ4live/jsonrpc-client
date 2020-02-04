@@ -3,6 +3,8 @@
 namespace Nbz4live\JsonRpc\Client;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Nbz4live\JsonRpc\Client\Transports\CurlTransport;
+use Nbz4live\JsonRpc\Client\Transports\JsonRpcTransport;
 
 class ServiceProvider extends BaseServiceProvider
 {
@@ -29,5 +31,7 @@ class ServiceProvider extends BaseServiceProvider
         if (\is_lumen()) {
             $this->app->configure('jsonrpcclient');
         }
+
+        $this->app->bind(JsonRpcTransport::class, config('jsonrpcclient.transport_class', CurlTransport::class));
     }
 }
