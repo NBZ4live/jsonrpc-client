@@ -3,6 +3,8 @@
 namespace Nbz4live\JsonRpc\Client;
 
 use Illuminate\Support\Facades\Log;
+use Nbz4live\JsonRpc\Client\Exceptions\JsonRpcException;
+use Nbz4live\JsonRpc\Client\Transports\JsonRpcTransport;
 
 /**
  * Class Client
@@ -18,15 +20,25 @@ use Illuminate\Support\Facades\Log;
 class Client
 {
     const CODE_PARSE_ERROR = -32700;
+
     const CODE_INVALID_REQUEST = -32600;
+
     const CODE_METHOD_NOT_FOUND = -32601;
+
     const CODE_INVALID_PARAMS = -32602;
+
     const CODE_INTERNAL_ERROR = -32603;
+
     const CODE_INVALID_PARAMETERS = 6000;
+
     const CODE_VALIDATION_ERROR = 6001;
+
     const CODE_UNAUTHORIZED = 7000;
+
     const CODE_FORBIDDEN = 7001;
+
     const CODE_EXTERNAL_INTEGRATION_ERROR = 8000;
+
     const CODE_INTERNAL_INTEGRATION_ERROR = 8001;
 
     public static $jsonrpc_messages = [
@@ -59,15 +71,20 @@ class Client
 
     private $time = 0;
 
-    public function __construct()
+    /** @var JsonRpcTransport */
+    private $transport;
+
+    public function __construct(JsonRpcTransport $transport)
     {
         $this->requests = [];
         $this->results = [];
+        $this->transport = $transport;
     }
 
     public static function __callStatic($method, $params)
     {
-        $instance = new static();
+        $instance = app(static::class);
+
         return $instance->$method(...$params);
     }
 
@@ -82,12 +99,15 @@ class Client
 
     /**
      * Устанавливает имя сервиса для текущего экземпляра клиента
+     *
      * @param string $serviceName
+     *
      * @return $this
      */
     protected function _get($serviceName)
     {
         $this->serviceName = $serviceName;
+
         return $this;
     }
 
@@ -100,17 +120,21 @@ class Client
         $this->requests = [];
         $this->results = [];
         $this->is_batch = true;
+
         return $this;
     }
 
     /**
      * Помечает вызываемый метод кешируемым
+     *
      * @param int $time
+     *
      * @return $this
      */
     protected function _cache($minutes = -1)
     {
         $this->cache = $minutes;
+
         return $this;
     }
 
@@ -149,8 +173,10 @@ class Client
 
     /**
      * Выполняет удаленный вызов (либо добавляет его в массив)
+     *
      * @param string $method
      * @param array $params
+     *
      * @return Response
      */
     protected function _call($method, $params)
@@ -198,6 +224,7 @@ class Client
         if (null === $settings['host']) {
             Log::error('No connection settings for the service "' . $serviceName . '');
             $this->result(null, false);
+
             return;
         }
 
@@ -219,39 +246,39 @@ class Client
         }
 
         // запрос
-        $json_request = json_encode($requests);
+        try {
+            $response = $this->transport->execute($serviceName, $settings, $requests, $this->getRequestHeaders($requests));
+        } catch (JsonRpcException $exception) {
+            $this->logError(\sprintf(
+                'JsonRpc call error (%s): %s. %s',
+                $serviceName,
+                $exception->getMessage(),
+                $this->getLogInfo($requests, null)
+            ));
 
-        $curl = curl_init($settings['host']);
-        curl_setopt($curl, CURLOPT_HEADER, false);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $this->getRequestHeaders($requests));
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $json_request);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+            $this->result(null, false, null, $exception->getMessage());
 
-        $json_response = curl_exec($curl);
-        curl_close($curl);
-        $response = json_decode($json_response);
-
-        // ошибка декодирования Json
-        if (null === $response) {
-            $this->logError('Error parsing response from Api. An error has occurred on the server. ' . $this->getLogInfo($json_request, $json_response));
-            $this->result(null, false);
             return;
         }
 
+        // ошибка декодирования Json
+        if (null === $response) {
+            $this->logError('Error parsing response from Api. An error has occurred on the server. ' . $this->getLogInfo($requests, $response));
+            $this->result(null, false);
+
+            return;
+        }
 
         if (is_array($response)) {
             // если вернулся массив результатов
             foreach ($response as $result) {
                 if (!$this->parseResult($result)) {
-                    $this->logError('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($json_request, $json_response));
+                    $this->logError('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($requests, $response));
                 }
             }
         } else {
             if (!$this->parseResult($response)) {
-                $this->logError('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($json_request, $json_response));
+                $this->logError('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($requests, $response));
             }
         }
         $this->requests = [];
@@ -259,12 +286,14 @@ class Client
 
     /**
      * @param $result
+     *
      * @return bool
      */
     protected function parseResult($result)
     {
         if (!empty($result->error)) {
             $this->result(!empty($result->id) ? $result->id : null, false, null, $result->error);
+
             return false;
         } else {
             $this->result(!empty($result->id) ? $result->id : null, true, $result->result);
@@ -273,12 +302,14 @@ class Client
             if (!empty($result->id) && $this->requests[$result->id]->wantCache()) {
                 $this->requests[$result->id]->setCache($this->results[$result->id]);
             }
+
             return true;
         }
     }
 
     /**
      * Заполняет результат указанными данными
+     *
      * @param string $id ID вызова. Если NULL, то будет заполнен результат всех вызовов
      * @param bool $success Успешен ли вызов
      * @param object $data Ответ вызова
@@ -307,9 +338,9 @@ class Client
         }
     }
 
-    private function getLogInfo($json_request, $json_response)
+    private function getLogInfo($requests, $response)
     {
-        return 'Request: ' . var_export($json_request, true) . '<br />Response: ' . var_export($json_response, true);
+        return 'Request: ' . \json_encode($requests) . '. Response: ' . \json_encode($response);
     }
 
     /**
@@ -328,7 +359,9 @@ class Client
 
     /**
      * Возвращает настройки подключения к сервису
+     *
      * @param string $serviceName
+     *
      * @return array
      */
     protected function getConnectionOptions($serviceName)
@@ -365,8 +398,10 @@ class Client
 
     /**
      * Создает новый запрос
+     *
      * @param string $method
      * @param array $params
+     *
      * @return Request
      */
     protected function createRequest($method, $params)

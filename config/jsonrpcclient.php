@@ -14,6 +14,8 @@ return [
      */
     'additionalHeaders' => [],
 
+    'transport_class' => env('JSONRPC_TRANSPORT_CLASS', Nbz4live\JsonRpc\Client\Transports\CurlTransport::class),
+
     // Список соединений
     'connections' => [
         // Наименование соединения
