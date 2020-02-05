@@ -15,9 +15,9 @@ interface JsonRpcTransport
      * @param array $requests Array of requests
      * @param array $headers Array of request headers
      *
-     * @return stdClass|null Rpc response
+     * @return mixed Rpc responses
      *
      * @throws JsonRpcException
      */
-    public function execute(string $serviceName, array $settings, array $requests, array $headers): ?stdClass;
+    public function execute(string $serviceName, array $settings, array $requests, array $headers);
 }
