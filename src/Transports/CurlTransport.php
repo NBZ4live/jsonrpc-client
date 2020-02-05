@@ -3,11 +3,10 @@
 namespace Nbz4live\JsonRpc\Client\Transports;
 
 use Nbz4live\JsonRpc\Client\Exceptions\JsonRpcException;
-use stdClass;
 
 class CurlTransport implements JsonRpcTransport
 {
-    public function execute(string $serviceName, array $settings, array $requests, array $headers): ?stdClass
+    public function execute(string $serviceName, array $settings, array $requests, array $headers)
     {
         $request = \json_encode($requests);
 
