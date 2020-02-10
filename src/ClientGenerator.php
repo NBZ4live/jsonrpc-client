@@ -25,7 +25,7 @@ class ClientGenerator extends Command
 
                 return;
             }
-            $this->generateClient($config, $connection);
+            $this->generateClient($config, $config['name'] ?? $connection);
         }
     }
 
