@@ -16,7 +16,7 @@ class ClientGenerator extends Command
         if ($connection === null) {
             $connections = config('jsonrpcclient.connections');
             foreach ($connections as $key => $connection) {
-                $this->generateClient($connection, $key);
+                $this->generateClient($connection, $connection['name'] ?? $key);
             }
         } else {
             $config = config('jsonrpcclient.connections.' . $connection);
