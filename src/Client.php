@@ -55,6 +55,8 @@ class Client
         self::CODE_INTERNAL_INTEGRATION_ERROR => 'Ошибка внутренних сервисов',
     ];
 
+    protected $connectionName = null;
+
     protected $serviceName = null;
 
     protected $is_batch = false;
@@ -206,11 +208,11 @@ class Client
     {
         $this->time = microtime(true);
 
-        // имя сервиса
+        $connectionName = $this->getConnectionName();
         $serviceName = $this->getServiceName();
 
         // настройки подключения
-        $settings = $this->getConnectionOptions($serviceName);
+        $settings = $this->getConnectionOptions($connectionName);
 
         $this->_setHeader('Content-type', 'application/json');
 
@@ -222,7 +224,7 @@ class Client
 
         // если не заданы настройки хоста
         if (null === $settings['host']) {
-            Log::error('No connection settings for the service "' . $serviceName . '');
+            Log::error('No settings for the connection "' . $connectionName . '');
             $this->result(null, false);
 
             return;
@@ -273,12 +275,12 @@ class Client
             // если вернулся массив результатов
             foreach ($response as $result) {
                 if (!$this->parseResult($result)) {
-                    $this->logError('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($requests, $response));
+                    $this->logError('JsonRpc error (' . $connectionName . '). ' . $this->getLogInfo($requests, $response));
                 }
             }
         } else {
             if (!$this->parseResult($response)) {
-                $this->logError('JsonRpc error (' . $serviceName . '). ' . $this->getLogInfo($requests, $response));
+                $this->logError('JsonRpc error (' . $connectionName . '). ' . $this->getLogInfo($requests, $response));
             }
         }
         $this->requests = [];
@@ -354,6 +356,16 @@ class Client
             return config('jsonrpcclient.default');
         } else {
             return $this->serviceName;
+        }
+    }
+
+    public function getConnectionName()
+    {
+        // имя сервиса
+        if ($this->connectionName === null) {
+            return $this->getServiceName();
+        } else {
+            return $this->connectionName;
         }
     }
 

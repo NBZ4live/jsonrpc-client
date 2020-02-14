@@ -12,20 +12,20 @@ class ClientGenerator extends Command
 
     public function handle()
     {
-        $connection = $this->argument('connection');
-        if ($connection === null) {
+        $connectionName = $this->argument('connection');
+        if ($connectionName === null) {
             $connections = config('jsonrpcclient.connections');
-            foreach ($connections as $key => $connection) {
-                $this->generateClient($connection, $connection['name'] ?? $key);
+            foreach ($connections as $connectionName => $connection) {
+                $this->generateClient($connection, $connectionName);
             }
         } else {
-            $config = config('jsonrpcclient.connections.' . $connection);
+            $config = config('jsonrpcclient.connections.' . $connectionName);
             if ($config === null) {
-                $this->output->error('Connection "' . $connection . '" not found!');
+                $this->output->error('Connection "' . $connectionName . '" not found!');
 
                 return;
             }
-            $this->generateClient($config, $config['name'] ?? $connection);
+            $this->generateClient($config, $connectionName);
         }
     }
 
@@ -91,10 +91,11 @@ class ClientGenerator extends Command
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
 
         $json_response = curl_exec($curl);
+        $error = \curl_error($curl);
         curl_close($curl);
         $result = json_decode($json_response);
         if ($result === null) {
-            $this->output->error('The host did not return the SMD-scheme. Generating a client is not possible.');
+            $this->output->error('The host did not return the SMD-scheme. Generating a client is not possible: ' . $error);
 
             return false;
         }
@@ -159,11 +160,11 @@ class ClientGenerator extends Command
      *
      * @param array  $smd SMD-схема
      * @param array  $connection Настройки подключения
-     * @param string $serviceName Название
+     * @param string $connectionName Название
      *
      * @return bool
      */
-    protected function generateClass($smd, $connection, $serviceName)
+    protected function generateClass($smd, $connection, $connectionName)
     {
         $classInfo = $this->getClassInfo($connection);
         if (null === $classInfo) {
@@ -175,6 +176,8 @@ class ClientGenerator extends Command
         } else {
             $methods = '';
         }
+
+        $serviceName = $connection['name'] ?? $connectionName;
 
         $classSource = <<<php
 <?php
@@ -188,6 +191,8 @@ use Nbz4live\JsonRpc\Client\Client;
  */
 class {$classInfo['name']} extends Client
 {
+    protected \$connectionName = '{$connectionName}';
+
     protected \$serviceName = '{$serviceName}';{$methods}
 }
 
